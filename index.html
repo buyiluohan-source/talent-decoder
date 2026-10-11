@@ -117,7 +117,7 @@
 </footer>
 
 <script>
-  // 5 道精选题目与维度映射
+// 5 道精选题目与维度映射
   const questions = [
     {
       title: "1. 如果在没有预算限制的情况下，让你自由策划一次 3 天的团队出行，你第一反应是：",
@@ -166,6 +166,34 @@
     }
   ];
 
+  // 4 种维度对应的测试报告库
+  const resultProfiles = {
+    A: {
+      title: "🧬 天赋解码结果：系统解构者",
+      quote: "“能在无序的信息与复杂环境中，快速剥离表象、构建秩序。”",
+      radar: "逻辑解析 (92%) | 高效架构",
+      career: "商业策略、产品架构、数据分析、技术专家"
+    },
+    B: {
+      title: "🧬 天赋解码结果：灵感创想家",
+      quote: "“打破常规是你的本能，你的脑洞是世界最珍贵的资源。”",
+      radar: "概念创新 (95%) | 跨界联想",
+      career: "创意策划、内容 IP、艺术设计、品牌顾问"
+    },
+    C: {
+      title: "🧬 天赋解码结果：高频共情者",
+      quote: "“你天然拥有敏锐的情感嗅觉，能建立最深度的信任链接。”",
+      radar: "情绪共鸣 (94%) | 团队凝聚",
+      career: "社群运营、心理咨询、用户研究、组织发展"
+    },
+    D: {
+      title: "🧬 天赋解码结果：高效破局者",
+      quote: "“目标明确，执行果敢，你是任何团队中不可或缺的推进引擎。”",
+      radar: "大局统筹 (90%) | 果断决策",
+      career: "项目管理、创业者、运营总监、业务操盘手"
+    }
+  };
+
   let currentStep = 0;
   const userAnswers = [];
 
@@ -187,7 +215,7 @@
   }
 
   function selectOption(type) {
-    userAnswers.push(`Q${currentStep + 1}:${type}`);
+    userAnswers.push(type);
     currentStep++;
     if (currentStep < questions.length) {
       renderQuestion();
@@ -196,29 +224,39 @@
     }
   }
 
+  // 统计用户选择最多的选项类别
+  function getDominantType(answers) {
+    const counts = { A: 0, B: 0, C: 0, D: 0 };
+    answers.forEach(type => { counts[type] = (counts[type] || 0) + 1; });
+    return Object.keys(counts).reduce((a, b) => counts[a] >= counts[b] ? a : b);
+  }
+
   function showResultLoading() {
     document.getElementById("quiz-card").style.display = "none";
     document.getElementById("result-card").style.display = "block";
     
-    // 模拟调用 AI 后端接口发送答案: userAnswers.join(", ")
+    // 计算占优类型
+    const mainType = getDominantType(userAnswers);
+    const profile = resultProfiles[mainType];
+
     setTimeout(() => {
       document.getElementById("loading-box").style.display = "none";
       const content = document.getElementById("result-content");
       content.style.display = "block";
       content.innerHTML = `
-        <h3 style="color:#38bdf8; font-size:18px; margin-bottom:10px;">🧬 天赋解码结果：系统解构者</h3>
+        <h3 style="color:#38bdf8; font-size:18px; margin-bottom:10px;">${profile.title}</h3>
         <p style="background:#0f172a; padding:10px; border-radius:8px; border-left:3px solid #38bdf8; margin-bottom:15px; font-style:italic;">
-          “能在无序的信息与复杂环境中，快速剥离表象构建秩序。”
+          ${profile.quote}
         </p>
-        <p><b>📊 潜能雷达：</b>逻辑解析 (92%) | 高效架构</p>
-        <p><b>🚀 闪光赛道：</b>商业策略、产品架构、数据分析</p>
-        <p style="margin-top:15px; font-size:12px; color:#64748b; text-align:center;">（测试版结果样例 · 完整接口联调中）</p>
+        <p style="margin-bottom:8px;"><b>📊 潜能雷达：</b>${profile.radar}</p>
+        <p style="margin-bottom:8px;"><b>🚀 闪光赛道：</b>${profile.career}</p>
+        <p style="margin-top:20px; font-size:12px; color:#64748b; text-align:center;">（天赋解码器 V1.0 · 基于 4 维心理偏好模型计算）</p>
       `;
-    }, 2000);
+    }, 1500);
   }
 
   // 初始化加载第一题
-  renderQuestion();
+  renderQuestion(); 
 </script>
 </body>
 </html>
