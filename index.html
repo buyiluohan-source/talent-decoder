@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+
+  
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>天赋解码器 TalentDecoder</title>
@@ -83,6 +86,10 @@
       margin-top: text-auto;
     }
   </style>
+<!-- ...你原有的 head 内容 ... -->
+  <!-- 引入 Supabase JS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 </head>
 <body>
 
@@ -117,7 +124,12 @@
 </footer>
 
 <script>
-// 5 道精选题目与维度映射
+// 1. 初始化 Supabase
+  const SUPABASE_URL = 'https://supabase.com/dashboard/project/czctjtuhuuxjctyglkga'; // 替换为你的 Supabase URL
+  const SUPABASE_ANON_KEY = 'sb_publishable_ZA_5CoJNGlcq1KTPcVEFWQ_ILkCR_as';           // 替换为你的 anon key
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // 2. 5 道题目与维度映射
   const questions = [
     {
       title: "1. 如果在没有预算限制的情况下，让你自由策划一次 3 天的团队出行，你第一反应是：",
@@ -166,7 +178,7 @@
     }
   ];
 
-  // 4 种维度对应的测试报告库
+  // 3. 结果数据库
   const resultProfiles = {
     A: {
       title: "🧬 天赋解码结果：系统解构者",
@@ -224,20 +236,35 @@
     }
   }
 
-  // 统计用户选择最多的选项类别
   function getDominantType(answers) {
     const counts = { A: 0, B: 0, C: 0, D: 0 };
     answers.forEach(type => { counts[type] = (counts[type] || 0) + 1; });
     return Object.keys(counts).reduce((a, b) => counts[a] >= counts[b] ? a : b);
   }
 
+  // 4. 将测试结果自动上报给 Supabase 数据库
+  async function saveResultToSupabase(answersStr, resultType) {
+    try {
+      await _supabase
+        .from('quiz_results')
+        .insert([
+          { answers: answersStr, result_type: resultType }
+        ]);
+      console.log('数据自动上报成功！');
+    } catch (err) {
+      console.error('上报失败:', err);
+    }
+  }
+
   function showResultLoading() {
     document.getElementById("quiz-card").style.display = "none";
     document.getElementById("result-card").style.display = "block";
     
-    // 计算占优类型
     const mainType = getDominantType(userAnswers);
     const profile = resultProfiles[mainType];
+
+    // 静默上传结果数据到 Supabase
+    saveResultToSupabase(userAnswers.join(','), profile.title);
 
     setTimeout(() => {
       document.getElementById("loading-box").style.display = "none";
@@ -250,13 +277,12 @@
         </p>
         <p style="margin-bottom:8px;"><b>📊 潜能雷达：</b>${profile.radar}</p>
         <p style="margin-bottom:8px;"><b>🚀 闪光赛道：</b>${profile.career}</p>
-        <p style="margin-top:20px; font-size:12px; color:#64748b; text-align:center;">（天赋解码器 V1.0 · 基于 4 维心理偏好模型计算）</p>
+        <p style="margin-top:20px; font-size:12px; color:#64748b; text-align:center;">（原生优势小测试 · 内测版）</p>
       `;
     }, 1500);
   }
 
-  // 初始化加载第一题
-  renderQuestion(); 
+  renderQuestion();
 </script>
 </body>
 </html>
