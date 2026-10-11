@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>天赋解码器 TalentDecoder</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      flex: 1;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .header { text-align: center; margin-bottom: 24px; }
+    .header h1 { font-size: 22px; color: #38bdf8; letter-spacing: 1px; }
+    .header p { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+    }
+    .progress {
+      font-size: 12px;
+      color: #38bdf8;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+    .question-title {
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+      color: #f1f5f9;
+    }
+    .options-list { display: flex; flex-direction: column; gap: 12px; }
+    .option-btn {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 14px 16px;
+      color: #cbd5e1;
+      font-size: 14px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      line-height: 1.4;
+    }
+    .option-btn:active {
+      border-color: #38bdf8;
+      background: #1e293b;
+      color: #38bdf8;
+    }
+    .result-area { display: none; text-align: center; }
+    .loading-spinner {
+      margin: 20px auto;
+      border: 3px solid #334155;
+      border-top: 3px solid #38bdf8;
+      border-radius: 50%;
+      width: 36px; height: 36px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    footer {
+      text-align: center;
+      padding: 20px 10px;
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.5;
+      margin-top: text-auto;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>🧬 天赋解码器</h1>
+    <p>TalentDecoder · 发现你的原生优势</p>
+  </div>
+
+  <div class="card" id="quiz-card">
+    <div class="progress" id="quiz-progress">QUESTION 1 / 5</div>
+    <div class="question-title" id="quiz-title">加载中...</div>
+    <div class="options-list" id="quiz-options"></div>
+  </div>
+
+  <!-- 分析结果展示区 -->
+  <div class="card result-area" id="result-card">
+    <div id="loading-box">
+      <div class="loading-spinner"></div>
+      <p style="font-size: 14px; color: #94a3b8;">正在通过 AI 解码你的天赋基因...</p>
+    </div>
+    <div id="result-content" style="display:none; text-align:left; font-size: 14px; line-height: 1.6; color: #cbd5e1;">
+      <!-- 大模型输出结果渲染区 -->
+    </div>
+  </div>
+</div>
+
+<!-- 防抄袭与版权声明 Footer -->
+<footer>
+  © 2026 天赋解码器 TalentDecoder. All Rights Reserved.<br>
+  本工具由 AI 驱动，测试逻辑与报告文案已完成 Git 时间戳存证。禁止未经授权的抄袭与商业搬运。
+</footer>
+
+<script>
+  // 5 道精选题目与维度映射
+  const questions = [
+    {
+      title: "1. 如果在没有预算限制的情况下，让你自由策划一次 3 天的团队出行，你第一反应是：",
+      options: [
+        { text: "A. 制作精细的时间节点、路线规划与避坑攻略", type: "A" },
+        { text: "B. 寻找一个没人去过的冷门奇葩小岛，准备搞个主题派对", type: "B" },
+        { text: "C. 先问问大家的偏好和身体状况，确保每个人都能玩得开心", type: "C" },
+        { text: "D. 搞清楚这次出行的核心目标，并把不同任务分工给合适的人", type: "D" }
+      ]
+    },
+    {
+      title: "2. 当你遇到一个一直没弄懂的难题（如智能设备坏了或系统报错），你会：",
+      options: [
+        { text: "A. 顺藤摸瓜研究说明书或原理，直到排查出故障根源", type: "A" },
+        { text: "B. 尝试各种奇奇怪怪、不按常理出牌的解决方式", type: "B" },
+        { text: "C. 找有经验的朋友请教，在互动讨论中把事情解决", type: "C" },
+        { text: "D. 迅速评估解决成本，如果太费时间就找性价比最高的替代方案", type: "D" }
+      ]
+    },
+    {
+      title: "3. 进入一个全新的陌生环境（如新社群、新项目组），你最容易被哪种人吸引？",
+      options: [
+        { text: "A. 说话极其严谨、逻辑清晰、用数据说话的人", type: "A" },
+        { text: "B. 点子特别多、画风天马行空、不随大流的人", type: "B" },
+        { text: "C. 情绪价值拉满、能瞬间照顾到场上每个人感受的人", type: "C" },
+        { text: "D. 气场强大、拿捏大局、推进事情极果断的人", type: "D" }
+      ]
+    },
+    {
+      title: "4. 如果让你写一本关于自己的书，你觉得书名最可能是：",
+      options: [
+        { text: "A. 《万物解构指南》", type: "A" },
+        { text: "B. 《常规之外：我的脑洞日记》", type: "B" },
+        { text: "C. 《温暖的连接：与世界对话》", type: "C" },
+        { text: "D. 《高效破局者》", type: "D" }
+      ]
+    },
+    {
+      title: "5. 周末突然多出 3 小时完全自由的时间，你更倾向于：",
+      options: [
+        { text: "A. 沉浸式搞懂一个一直想学的新知识/工具", type: "A" },
+        { text: "B. 随性涂鸦、写作或沉浸在非日常的奇思妙想里", type: "B" },
+        { text: "C. 约上两三好友找个咖啡馆深入聊聊天", type: "C" },
+        { text: "D. 清理积压已久的待办事项，把下周计划安排得妥妥当当", type: "D" }
+      ]
+    }
+  ];
+
+  let currentStep = 0;
+  const userAnswers = [];
+
+  function renderQuestion() {
+    const q = questions[currentStep];
+    document.getElementById("quiz-progress").innerText = `QUESTION ${currentStep + 1} / ${questions.length}`;
+    document.getElementById("quiz-title").innerText = q.title;
+    
+    const optionsContainer = document.getElementById("quiz-options");
+    optionsContainer.innerHTML = "";
+    
+    q.options.forEach(opt => {
+      const btn = document.createElement("button");
+      btn.className = "option-btn";
+      btn.innerText = opt.text;
+      btn.onclick = () => selectOption(opt.type);
+      optionsContainer.appendChild(btn);
+    });
+  }
+
+  function selectOption(type) {
+    userAnswers.push(`Q${currentStep + 1}:${type}`);
+    currentStep++;
+    if (currentStep < questions.length) {
+      renderQuestion();
+    } else {
+      showResultLoading();
+    }
+  }
+
+  function showResultLoading() {
+    document.getElementById("quiz-card").style.display = "none";
+    document.getElementById("result-card").style.display = "block";
+    
+    // 模拟调用 AI 后端接口发送答案: userAnswers.join(", ")
+    setTimeout(() => {
+      document.getElementById("loading-box").style.display = "none";
+      const content = document.getElementById("result-content");
+      content.style.display = "block";
+      content.innerHTML = `
+        <h3 style="color:#38bdf8; font-size:18px; margin-bottom:10px;">🧬 天赋解码结果：系统解构者</h3>
+        <p style="background:#0f172a; padding:10px; border-radius:8px; border-left:3px solid #38bdf8; margin-bottom:15px; font-style:italic;">
+          “能在无序的信息与复杂环境中，快速剥离表象构建秩序。”
+        </p>
+        <p><b>📊 潜能雷达：</b>逻辑解析 (92%) | 高效架构</p>
+        <p><b>🚀 闪光赛道：</b>商业策略、产品架构、数据分析</p>
+        <p style="margin-top:15px; font-size:12px; color:#64748b; text-align:center;">（测试版结果样例 · 完整接口联调中）</p>
+      `;
+    }, 2000);
+  }
+
+  // 初始化加载第一题
+  renderQuestion();
+</script>
+</body>
+</html>
