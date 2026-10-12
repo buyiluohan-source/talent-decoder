@@ -179,12 +179,22 @@
         </div>
 
         <!-- 3. 结果页面 -->
-        <div id="result-step" class="result-box hidden">
-            <span class="result-badge">你的天赋潜能主导类型</span>
-            <div id="result-type" class="result-type"></div>
-            <div id="result-desc" class="result-desc"></div>
-            <button class="option-btn" style="text-align:center; width:100%; margin-top:10px;" onclick="location.reload()">重新测试</button>
-        </div>
+<div id="result-step" class="result-box hidden">
+    <span class="result-badge">你的天赋潜能主导类型</span>
+    <div id="result-type" class="result-type"></div>
+    <div id="result-desc" class="result-desc"></div>
+
+    <!-- 1. 新增：意见反馈按钮（换成你的腾讯问卷/问卷星/飞书表单链接） -->
+    <a href="https://your-feedback-form-link.com" target="_blank" style="text-decoration: none;">
+        <button class="option-btn" style="text-align:center; width:100%; margin-top:10px; background-color: var(--primary); border-color: var(--primary-hover); font-weight: 600;">
+            💬 觉得准吗？点击 10 秒反馈意见
+        </button>
+    </a>
+
+    <!-- 原有的重新测试按钮 -->
+    <button class="option-btn" style="text-align:center; width:100%; margin-top:10px;" onclick="location.reload()">重新测试</button>
+     </div>
+</div>
     </div>
 
     <footer>
