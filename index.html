@@ -1,288 +1,422 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>职场潜能与天赋能量场评估</title>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+            --border-color: #334155;
+        }
 
-  
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>原生优势测试</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: #0f172a;
-      color: #f8fafc;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      padding: 20px;
-    }
-    .container {
-      max-width: 500px;
-      margin: 0 auto;
-      flex: 1;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-    .header { text-align: center; margin-bottom: 24px; }
-    .header h1 { font-size: 22px; color: #38bdf8; letter-spacing: 1px; }
-    .header p { font-size: 13px; color: #94a3b8; margin-top: 4px; }
-    .card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
-    }
-    .progress {
-      font-size: 12px;
-      color: #38bdf8;
-      font-weight: bold;
-      margin-bottom: 12px;
-    }
-    .question-title {
-      font-size: 16px;
-      line-height: 1.5;
-      margin-bottom: 20px;
-      color: #f1f5f9;
-    }
-    .options-list { display: flex; flex-direction: column; gap: 12px; }
-    .option-btn {
-      background: #0f172a;
-      border: 1px solid #334155;
-      border-radius: 10px;
-      padding: 14px 16px;
-      color: #cbd5e1;
-      font-size: 14px;
-      text-align: left;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      line-height: 1.4;
-    }
-    .option-btn:active {
-      border-color: #38bdf8;
-      background: #1e293b;
-      color: #38bdf8;
-    }
-    .result-area { display: none; text-align: center; }
-    .loading-spinner {
-      margin: 20px auto;
-      border: 3px solid #334155;
-      border-top: 3px solid #38bdf8;
-      border-radius: 50%;
-      width: 36px; height: 36px;
-      animation: spin 1s linear infinite;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    footer {
-      text-align: center;
-      padding: 20px 10px;
-      font-size: 11px;
-      color: #64748b;
-      line-height: 1.5;
-      margin-top: text-auto;
-    }
-  </style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
 
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            padding: 28px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background-color: var(--border-color);
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-inner {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .options-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background-color: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 16px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            line-height: 1.4;
+        }
+
+        .option-btn:hover {
+            background-color: var(--primary);
+            border-color: var(--primary-hover);
+        }
+
+        .result-box {
+            text-align: center;
+        }
+
+        .result-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            background-color: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+        }
+
+        .result-type {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #a5b4fc;
+            margin-bottom: 16px;
+        }
+
+        .result-desc {
+            font-size: 0.95rem;
+            color: var(--text-sub);
+            line-height: 1.6;
+            margin-bottom: 24px;
+            text-align: left;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        footer {
+            margin-top: 24px;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="header">
-    <h1>🧬 原生优势测试</h1>
-    <p>发现你的原生优势</p>
-  </div>
+    <div class="card">
+        <h1 class="title">潜能解码评估</h1>
+        <p class="subtitle">洞察你的核心优势与潜能能量场</p>
 
-  <div class="card" id="quiz-card">
-    <div class="progress" id="quiz-progress">QUESTION 1 / 5</div>
-    <div class="question-title" id="quiz-title">加载中...</div>
-    <div class="options-list" id="quiz-options"></div>
-  </div>
+        <div id="progress-container" class="progress-bar hidden">
+            <div id="progress-inner" class="progress-inner"></div>
+        </div>
 
-  <!-- 分析结果展示区 -->
-  <div class="card result-area" id="result-card">
-    <div id="loading-box">
-      <div class="loading-spinner"></div>
-      <p style="font-size: 14px; color: #94a3b8;">正在通过 AI 解码你的天赋基因...</p>
+        <!-- 1. 前置身份选择页 -->
+        <div id="role-select-step">
+            <div class="question-title">请选择你当前的身份形态：</div>
+            <div class="options-group">
+                <button class="option-btn" onclick="selectRole('student')">
+                    🎓 <strong>在校生</strong>（含本科、硕士、博士生）
+                </button>
+                <button class="option-btn" onclick="selectRole('worker')">
+                    💼 <strong>职场青年</strong>（入职/创业/自由职业）
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. 答题区域 -->
+        <div id="quiz-step" class="hidden">
+            <div id="question-text" class="question-title"></div>
+            <div id="options-container" class="options-group"></div>
+        </div>
+
+        <!-- 3. 结果页面 -->
+        <div id="result-step" class="result-box hidden">
+            <span class="result-badge">你的天赋潜能主导类型</span>
+            <div id="result-type" class="result-type"></div>
+            <div id="result-desc" class="result-desc"></div>
+            <button class="option-btn" style="text-align:center; width:100%; margin-top:10px;" onclick="location.reload()">重新测试</button>
+        </div>
     </div>
-    <div id="result-content" style="display:none; text-align:left; font-size: 14px; line-height: 1.6; color: #cbd5e1;">
-      <!-- 大模型输出结果渲染区 -->
-    </div>
-  </div>
-</div>
 
-<!-- 防抄袭与版权声明 Footer -->
-<footer>
-  © 2026 Powered by AlphaLab Internal<br>
-  本工具由 AI 驱动，测试逻辑与报告文案已完成 Git 时间戳存证。禁止未经授权的抄袭与商业搬运。
-</footer> 
-<!-- 引入 Supabase JS SDK -->
+    <footer>
+        <p>Powered by AlphaLab Internal</p>
+    </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script>
-// 1. 初始化 Supabase
-  const SUPABASE_URL = 'https://czctjtuhuuxjctyglkga.supabase.co'; // 替换为你的 Supabase URL
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6Y3RqdHVodXV4amN0eWdsa2dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3MDc4NTMsImV4cCI6MjEwNzI4Mzg1M30.BQqmTHkBrjIqP_FyUVF-lxI4QyhJ5PU5Vag0wMFQPXs';           // 替换为你的 anon key
-  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    <script>
+        // Supabase 配置（替换为你的实际地址与 Anon Key）
+        const SUPABASE_URL = 'https://czctjtuhuuxjctyglkga.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN6Y3RqdHVodXV4amN0eWdsa2dhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3MDc4NTMsImV4cCI6MjEwNzI4Mzg1M30.BQqmTHkBrjIqP_FyUVF-lxI4QyhJ5PU5Vag0wMFQPXs'; // 请替换为你真实的 key
+        
+        let supabaseClient = null;
+        if (typeof supabase !== 'undefined') {
+            supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        }
 
-  // 2. 5 道题目与维度映射
-  const questions = [
-    {
-      title: "1. 如果在没有预算限制的情况下，让你自由策划一次 3 天的团队出行，你第一反应是：",
-      options: [
-        { text: "A. 制作精细的时间节点、路线规划与避坑攻略", type: "A" },
-        { text: "B. 寻找一个没人去过的冷门奇葩小岛，准备搞个主题派对", type: "B" },
-        { text: "C. 先问问大家的偏好和身体状况，确保每个人都能玩得开心", type: "C" },
-        { text: "D. 搞清楚这次出行的核心目标，并把不同任务分工给合适的人", type: "D" }
-      ]
-    },
-    {
-      title: "2. 当你遇到一个一直没弄懂的难题（如智能设备坏了或系统报错），你会：",
-      options: [
-        { text: "A. 顺藤摸瓜研究说明书或原理，直到排查出故障根源", type: "A" },
-        { text: "B. 尝试各种奇奇怪怪、不按常理出牌的解决方式", type: "B" },
-        { text: "C. 找有经验的朋友请教，在互动讨论中把事情解决", type: "C" },
-        { text: "D. 迅速评估解决成本，如果太费时间就找性价比最高的替代方案", type: "D" }
-      ]
-    },
-    {
-      title: "3. 进入一个全新的陌生环境（如新社群、新项目组），你最容易被哪种人吸引？",
-      options: [
-        { text: "A. 说话极其严谨、逻辑清晰、用数据说话的人", type: "A" },
-        { text: "B. 点子特别多、画风天马行空、不随大流的人", type: "B" },
-        { text: "C. 情绪价值拉满、能瞬间照顾到场上每个人感受的人", type: "C" },
-        { text: "D. 气场强大、拿捏大局、推进事情极果断的人", type: "D" }
-      ]
-    },
-    {
-      title: "4. 如果让你写一本关于自己的书，你觉得书名最可能是：",
-      options: [
-        { text: "A. 《万物解构指南》", type: "A" },
-        { text: "B. 《常规之外：我的脑洞日记》", type: "B" },
-        { text: "C. 《温暖的连接：与世界对话》", type: "C" },
-        { text: "D. 《高效破局者》", type: "D" }
-      ]
-    },
-    {
-      title: "5. 周末突然多出 3 小时完全自由的时间，你更倾向于：",
-      options: [
-        { text: "A. 沉浸式搞懂一个一直想学的新知识/工具", type: "A" },
-        { text: "B. 随性涂鸦、写作或沉浸在非日常的奇思妙想里", type: "B" },
-        { text: "C. 约上两三好友找个咖啡馆深入聊聊天", type: "C" },
-        { text: "D. 清理积压已久的待办事项，把下周计划安排得妥妥当当", type: "D" }
-      ]
-    }
-  ];
+        // 双轨题库设计
+        const quizBank = {
+            student: [
+                {
+                    q: "Q1. 距离期末大项目/论文开题截止只剩三天，导师要求突然大改方向，你会？",
+                    options: [
+                        { text: "A. 迅速重新规划每小时的攻坚进度", type: "A" },
+                        { text: "B. 先拉组员/同学吐槽抱团，分摊压力", type: "B" },
+                        { text: "C. 灵光一现，觉得新方向更有意思直接发散创意", type: "C" },
+                        { text: "D. 翻出规范文档和模版，稳扎稳打重构", type: "D" }
+                    ]
+                },
+                {
+                    q: "Q2. 在小组合作课题中，组员意见不一、进度拖沓，你通常会？",
+                    options: [
+                        { text: "A. 强力推导核心逻辑，把任务强行往下推进", type: "A" },
+                        { text: "B. 居中调停，照顾大家情绪重新凝聚团队", type: "B" },
+                        { text: "C. 承包最需要脑洞的部分，负责创新与视觉", type: "C" },
+                        { text: "D. 承担统筹和文档整理，确保按时交付", type: "D" }
+                    ]
+                },
+                {
+                    q: "Q3. 在校园或科研生活中，什么最让你有成就感？",
+                    options: [
+                        { text: "A. 独立攻克极其复杂的学术/算法难题", type: "A" },
+                        { text: "B. 组织了一场非常成功、大家很嗨的社团活动", type: "B" },
+                        { text: "C. 完成了一篇视角独特的论文或设计作品", type: "C" },
+                        { text: "D. 把复习资料梳理得极其井井有条", type: "D" }
+                    ]
+                },
+                {
+                    q: "Q4. 面对一个完全没涉猎过的竞赛或领域，你会？",
+                    options: [
+                        { text: "A. 兴奋！直接查英文文献边试错边推进", type: "A" },
+                        { text: "B. 找参加过的学长学姐打听经验，找靠谱搭档", type: "B" },
+                        { text: "C. 太好了，正好可以打破常规套路玩点新的", type: "C" },
+                        { text: "D. 先拉备战时间表和资料清单，稳扎稳打", type: "D" }
+                    ]
+                },
+                {
+                    q: "Q5. 高强度科研/学习了一整周后，周末你如何“回血”？",
+                    options: [
+                        { text: "A. 复盘个人目标，制定下周高效计划", type: "A" },
+                        { text: "B. 约三五好友聚餐、轰趴，在互动中补充能量", type: "B" },
+                        { text: "C. 沉浸在音乐、看展或手作等个人灵感世界", type: "C" },
+                        { text: "D. 彻底大扫除、洗衣服，重塑生活秩序感", type: "D" }
+                    ]
+                }
+            ],
+            worker: [
+                {
+                    q: "Q1. 周五下班前 10 分钟，客户紧急提出要大改方案，你的第一反应是？",
+                    options: [
+                        { text: "A. 重新拆解关键节点，迅速分工拆单", type: "A" },
+                        { text: "B. 先安抚团队情绪，开会把压力分摊", type: "B" },
+                        { text: "C. 跳出旧框架，抛出一个全新的替代大方案", type: "C" },
+                        { text: "D. 翻看备份和模版，用最稳妥的流程快速填坑", type: "D" }
+                    ]
+                },
+                {
+                    q: "Q2. 在分歧严重、各执一词的跨部门会议上，你扮演的角色是？",
+                    options: [
+                        { text: "A. 用数据和事实说话，指出哪条路线 ROI 最高", type: "A" },
+                        { text: "B. 察言观色，找准利益诉求平息尴尬情绪", type: "B" },
+                        { text: "C. 提出一个谁都没想到的新视角打破僵局", type: "C" },
+                        { text: "D. 梳理讨论要点，确认落地细节与风险控制", type: "D" }
+                    ]
+                },
+                {
+                    q: "Q3. 最能让你感到工作成就感爆棚的时刻是？",
+                    options: [
+                        { text: "A. 攻克了一个大家都搞不定的硬核业务难题", type: "A" },
+                        { text: "B. 理顺了合作关系，获得跨部门一致好评", type: "B" },
+                        { text: "C. 构想的创新产品/策划得到了完美的呈现场景", type: "C" },
+                        { text: "D. 项目按计划完美推进，零失误、零延迟落地", type: "D" }
+                    ]
+                },
+                {
+                    q: "Q4. 领导给你派了一个完全没接触过的全新业务方向，你会？",
+                    options: [
+                        { text: "A. 兴奋！立刻拆解目标边做边迭代", type: "A" },
+                        { text: "B. 先找领域专家或前辈请教，借力破局", type: "B" },
+                        { text: "C. 不受老套路束缚，大胆尝试全新玩法", type: "C" },
+                        { text: "D. 建立了工作对照表，把踩坑风险提前排查", type: "D" }
+                    ]
+                },
+                {
+                    q: "Q5. 经过极其消耗精力的一周高压工作，周末你怎么恢复能量？",
+                    options: [
+                        { text: "A. 梳理本周成果，把下周计划制定清晰", type: "A" },
+                        { text: "B. 约朋友聚会聊天，在社交中释放压力", type: "B" },
+                        { text: "C. 独处探索灵感，做自己感兴趣的小项目", type: "C" },
+                        { text: "D. 整理房间、制定健康计划，找回掌控感", type: "D" }
+                    ]
+                }
+            ]
+        };
 
-  // 3. 结果数据库
-  const resultProfiles = {
-    A: {
-      title: "🧬 天赋解码结果：系统解构者",
-      quote: "“能在无序的信息与复杂环境中，快速剥离表象、构建秩序。”",
-      radar: "逻辑解析 (92%) | 高效架构",
-      career: "商业策略、产品架构、数据分析、技术专家"
-    },
-    B: {
-      title: "🧬 天赋解码结果：灵感创想家",
-      quote: "“打破常规是你的本能，你的脑洞是世界最珍贵的资源。”",
-      radar: "概念创新 (95%) | 跨界联想",
-      career: "创意策划、内容 IP、艺术设计、品牌顾问"
-    },
-    C: {
-      title: "🧬 天赋解码结果：高频共情者",
-      quote: "“你天然拥有敏锐的情感嗅觉，能建立最深度的信任链接。”",
-      radar: "情绪共鸣 (94%) | 团队凝聚",
-      career: "社群运营、心理咨询、用户研究、组织发展"
-    },
-    D: {
-      title: "🧬 天赋解码结果：高效破局者",
-      quote: "“目标明确，执行果敢，你是任何团队中不可或缺的推进引擎。”",
-      radar: "大局统筹 (90%) | 果断决策",
-      career: "项目管理、创业者、运营总监、业务操盘手"
-    }
-  };
+        // 解读结果配置
+        const resultProfiles = {
+            "A": {
+                name: "破局者 (Strategist)",
+                desc: "你拥有极强的目标导向与逻辑推演能力。面对复杂多变的环境，你能迅速抓取核心矛盾并强力推进，是天然的攻坚手与战略解题人。"
+            },
+            "B": {
+                name: "连接者 (Connector)",
+                desc: "你具备高超的情绪感知与资源整合能力。你善于搭建人与人之间的信任桥梁，抚平团队摩擦，是组织不可或缺的超级润滑剂与能量枢纽。"
+            },
+            "C": {
+                name: "造物者 (Creator)",
+                desc: "你的思维不受传统框架限制，拥有敏锐的直觉与丰富的创造力。你总能为死板的项目注入灵感火花，擅长从 0 到 1 打造令人惊艳的独特产物。"
+            },
+            "D": {
+                name: "掌舵者 (Organizer)",
+                desc: "你稳重细致，对风险和秩序有极其天然的掌控力。无论前线如何波谲云诡，你总能确保后方流程的规范落地，是团队最放心的定海神针。"
+            }
+        };
 
-  let currentStep = 0;
-  const userAnswers = [];
+        // 状态变量
+        let selectedRole = '';
+        let currentQuestions = [];
+        let currentIndex = 0;
+        let userAnswers = [];
 
-  function renderQuestion() {
-    const q = questions[currentStep];
-    document.getElementById("quiz-progress").innerText = `QUESTION ${currentStep + 1} / ${questions.length}`;
-    document.getElementById("quiz-title").innerText = q.title;
-    
-    const optionsContainer = document.getElementById("quiz-options");
-    optionsContainer.innerHTML = "";
-    
-    q.options.forEach(opt => {
-      const btn = document.createElement("button");
-      btn.className = "option-btn";
-      btn.innerText = opt.text;
-      btn.onclick = () => selectOption(opt.type);
-      optionsContainer.appendChild(btn);
-    });
-  }
+        // 选择身份
+        function selectRole(role) {
+            selectedRole = role;
+            currentQuestions = quizBank[role];
+            
+            document.getElementById('role-select-step').classList.add('hidden');
+            document.getElementById('quiz-step').classList.remove('hidden');
+            document.getElementById('progress-container').classList.remove('hidden');
+            
+            renderQuestion();
+        }
 
-  function selectOption(type) {
-    userAnswers.push(type);
-    currentStep++;
-    if (currentStep < questions.length) {
-      renderQuestion();
-    } else {
-      showResultLoading();
-    }
-  }
+        // 渲染题目
+        function renderQuestion() {
+            const qData = currentQuestions[currentIndex];
+            document.getElementById('question-text').innerText = qData.q;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
 
-  function getDominantType(answers) {
-    const counts = { A: 0, B: 0, C: 0, D: 0 };
-    answers.forEach(type => { counts[type] = (counts[type] || 0) + 1; });
-    return Object.keys(counts).reduce((a, b) => counts[a] >= counts[b] ? a : b);
-  }
+            // 更新进度条
+            const progressPct = ((currentIndex) / currentQuestions.length) * 100;
+            document.getElementById('progress-inner').style.width = `${progressPct}%`;
 
-  // 4. 将测试结果自动上报给 Supabase 数据库
-  async function saveResultToSupabase(answersStr, resultType) {
-    try {
-      await _supabase
-        .from('quiz_results')
-        .insert([
-          { answers: answersStr, result_type: resultType }
-        ]);
-      console.log('数据自动上报成功！');
-    } catch (err) {
-      console.error('上报失败:', err);
-    }
-  }
+            qData.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt.text;
+                btn.onclick = () => handleAnswer(opt.type);
+                optionsContainer.appendChild(btn);
+            });
+        }
 
-  function showResultLoading() {
-    document.getElementById("quiz-card").style.display = "none";
-    document.getElementById("result-card").style.display = "block";
-    
-    const mainType = getDominantType(userAnswers);
-    const profile = resultProfiles[mainType];
+        // 记录答案与推进
+        function handleAnswer(type) {
+            userAnswers.push(type);
+            currentIndex++;
 
-    // 静默上传结果数据到 Supabase
-    saveResultToSupabase(userAnswers.join(','), profile.title);
+            if (currentIndex < currentQuestions.length) {
+                renderQuestion();
+            } else {
+                showResult();
+            }
+        }
 
-    setTimeout(() => {
-      document.getElementById("loading-box").style.display = "none";
-      const content = document.getElementById("result-content");
-      content.style.display = "block";
-      content.innerHTML = `
-        <h3 style="color:#38bdf8; font-size:18px; margin-bottom:10px;">${profile.title}</h3>
-        <p style="background:#0f172a; padding:10px; border-radius:8px; border-left:3px solid #38bdf8; margin-bottom:15px; font-style:italic;">
-          ${profile.quote}
-        </p>
-        <p style="margin-bottom:8px;"><b>📊 潜能雷达：</b>${profile.radar}</p>
-        <p style="margin-bottom:8px;"><b>🚀 闪光赛道：</b>${profile.career}</p>
-        <p style="margin-top:20px; font-size:12px; color:#64748b; text-align:center;">（原生优势小测试 · 内测版）</p>
-      `;
-    }, 1500);
-  }
+        // 计算结果与展示
+        async function showResult() {
+            document.getElementById('quiz-step').classList.add('hidden');
+            document.getElementById('progress-container').classList.add('hidden');
+            document.getElementById('result-step').classList.remove('hidden');
 
-  renderQuestion();
-</script>
+            // 统计出现频率最多的类型
+            const counts = { A: 0, B: 0, C: 0, D: 0 };
+            userAnswers.forEach(t => counts[t] = (counts[t] || 0) + 1);
+            
+            let finalType = 'A';
+            let maxCount = -1;
+            for (let k in counts) {
+                if (counts[k] > maxCount) {
+                    maxCount = counts[k];
+                    finalType = k;
+                }
+            }
+
+            const profile = resultProfiles[finalType];
+            document.getElementById('result-type').innerText = profile.name;
+            document.getElementById('result-desc').innerText = profile.desc;
+
+            // 组合上报数据
+            const answerPathStr = `[身份:${selectedRole === 'student' ? '在校生' : '职场青年'}] ` + userAnswers.join(',');
+            
+            // 数据自动上报 Supabase
+            if (supabaseClient) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('quiz_results')
+                        .insert([
+                            { 
+                                answers: answerPathStr, 
+                                result_type: profile.name 
+                            }
+                        ]);
+                    if (error) {
+                        console.error('上报失败:', error);
+                    } else {
+                        console.log('数据自动上报成功！');
+                    }
+                } catch (e) {
+                    console.error('上报异常:', e);
+                }
+            }
+        }
+    </script>
 </body>
 </html>
